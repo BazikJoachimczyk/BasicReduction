@@ -1,5 +1,13 @@
 ### Klasa obiektów: Frame. Dziedziczy wartości Headera, uzupełniając je o nowe, potrzebne do stworzenia kompletnej ramki typu fits, która zapisuje poprzez uruchomienie funkcji SaveFitsFile().
 
+from header import Header
+from astropy.coordinates import EarthLocation, AltAz, SkyCoord
+from astropy.time import Time
+from astropy import units as u
+from astropy.wcs import WCS
+from astropy.io import fits
+
+
 class Frame(Header):
     def __init__(self, path):
         Header.__init__(self)

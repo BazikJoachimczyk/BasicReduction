@@ -1,4 +1,5 @@
 ### Klasa obiektów: Header. Przechowuje dane dotyczące headera. Uzupełnia się poprzez uruchomienie funkcji OpenHeader(), której argumentem jest ścieżka pliku, którego danymi z headera uzupełniany jest obiekt Header.
+from os import listdir, makedirs
 
 class Header:
     def __init__(self):

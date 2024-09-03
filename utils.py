@@ -1,3 +1,9 @@
+from os import listdir, makedirs
+from os import renames
+from os.path import isfile, join, exists
+from astropy.io import fits
+
+
 def FitsFilesData(path):
     """
     Z plików fits w danym folderze tworzy macierz danych do wykonywania obliczeń.
