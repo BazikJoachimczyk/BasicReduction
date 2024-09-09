@@ -37,12 +37,12 @@ def SortBDFFiles(path):
 
                     fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Dark", 'Dark_' + fits_exptime, bdf_contains[i]) )
 
-                elif fits_header['IMAGETYP'] == 'Light Frame' or 'Flat Frame':      # tworzenie podfolderu z flatami z podziałem na filtry
+                elif fits_header['IMAGETYP'] == 'Light Frame' or 'Flat Frame' or 'Flat Field':      # tworzenie podfolderu z flatami z podziałem na filtry
                     
                     try:
+                        fits_file.close()
                         fits_filter = str(fits_header['FILTER'])
                         fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_' + fits_filter, bdf_contains[i]) )
-                        fits_file.close()
                     except:
                         fits_file.close()
                         fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_', bdf_contains[i]) )

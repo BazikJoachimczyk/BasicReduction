@@ -1,3 +1,10 @@
+from os.path import join, exists
+from os import listdir, makedirs
+from building_masters import masterFrames
+from frame import Frame
+from utils import GetCoordsFromAstrometry
+from astropy.io import fits
+
 def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLICY
 
             
@@ -13,10 +20,12 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
 
             data = data - masterbias.data
             data = data - masterdark.data
+
+            data[data < 0] = 0
             data = data / masterflat.data 
             
-            data[data > 65535] = 65535
-
+            
+            
             fits_frame.data = data 
             fits_frame.name = 'out_' + filename
             fits_frame.path = join(path, object, 'Pipeline_' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
@@ -30,14 +39,13 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
 
             fits_frame.SaveFitsFullHeader(join(path, object, filename))
 
-def CalculateScienceFrames(path):
+def CalculateScienceFrames(path, debugMode = False):
 
     objects = listdir(path)             # lista obiektów obserwowanych w nocy
     objects.remove('bdf')               # wyrzucam folder BDF bo to nie obiekt
-
     for object in objects:              # pętla dla folderów każdego obserwowanego obiektu
                                         # wkradam się z wyznaczeniem współrzędnych na podstawie jednego zdjęcia
-        Coords = GetCoordsFromAstrometry(join(path,object))
+        Coords = GetCoordsFromAstrometry(join(path,object), debugMode)
 
         frames = listdir(join(path ,object))
 

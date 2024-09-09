@@ -1,5 +1,6 @@
 ### Klasa obiektów: Header. Przechowuje dane dotyczące headera. Uzupełnia się poprzez uruchomienie funkcji OpenHeader(), której argumentem jest ścieżka pliku, którego danymi z headera uzupełniany jest obiekt Header.
 from os import listdir, makedirs
+from astropy.io import fits
 
 class Header:
     def __init__(self):
@@ -14,6 +15,7 @@ class Header:
         self.bzero = 0
         self.history = ''
         self.jd = 0
+        self.mjd = self.jd - 2400000.5
         self.object = ''
         self.ra = 0
         self.dec = 0

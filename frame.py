@@ -4,9 +4,12 @@ from header import Header
 from astropy.coordinates import EarthLocation, AltAz, SkyCoord
 from astropy.time import Time
 from astropy import units as u
-from astropy.wcs import WCS
 from astropy.io import fits
+from astropy.coordinates import EarthLocation, AltAz, SkyCoord
+from os.path import join
+import numpy as np
 
+Observatory = EarthLocation(lat=53.093999*u.deg, lon=18.555925*u.deg, height=70*u.m)
 
 class Frame(Header):
     def __init__(self, path):
@@ -42,20 +45,21 @@ class Frame(Header):
         save_header['BITPIX'] = self.bitpix
         save_header['BSCALE'] = self.bscale
         save_header['BZERO'] = self.bzero
-
         save_header['HISTORY'] = self.history
         hdull.writeto(join(self.path, self.name), overwrite=True)
 
 
     def SaveFitsFullHeader(self, headerPath):                         
+        data = np.array((self.data - self.bzero), dtype = np.float32)        
 
-        hdu = fits.PrimaryHDU(data = np.int16(self.data - self.bzero))
+        hdu = fits.PrimaryHDU(data)
         hdull = fits.HDUList([hdu]) 
 
 
         with fits.open(headerPath) as openfits:
             save_header = openfits[0].header
 
+        save_header['MJD'] = self.jd - 2400000.5
         save_header['HISTORY'] = self.history
         save_header['RA'] = self.ra
         save_header['DEC'] = self.dec

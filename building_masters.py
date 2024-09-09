@@ -1,3 +1,12 @@
+from os import listdir
+from os.path import join
+from frame import Frame
+import numpy as np
+from utils import FitsFilesData
+from masters import Masters
+
+masterFrames = Masters()  
+
 def CreateMasterFrames(path):
     """
     Przeszukuje folder z obserwacji po ramki kalibracyjne, z których tworzy masterbiasy, masterdarki i masterflaty.

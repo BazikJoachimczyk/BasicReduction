@@ -2,6 +2,10 @@ from os import listdir, makedirs
 from os import renames
 from os.path import isfile, join, exists
 from astropy.io import fits
+import numpy as np
+from astroquery.astrometry_net import AstrometryNet
+from astroquery.astrometry_net import conf
+from astropy.wcs import WCS
 
 
 def FitsFilesData(path):
@@ -28,7 +32,7 @@ def FitsFilesData(path):
 
     return master_list
 
-def GetCoordsFromAstrometry(path):
+def GetCoordsFromAstrometry(path, debugMode = False):
 
     frames = listdir(path)
 
@@ -40,6 +44,10 @@ def GetCoordsFromAstrometry(path):
     Ra = 0                                              # inicjuję współrzędne, które wypełni Astrometry
     Dec = 0
     Counter = 0
+
+    if (debugMode):
+        return Ra,Dec
+    
     print('File sent to Astrometry.net: ', join(path,frames[0]))
     
     while Counter < 3:    
