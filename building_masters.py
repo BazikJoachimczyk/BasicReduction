@@ -34,7 +34,7 @@ def CreateMasterFrames(path):
     mbias_frame.history = 'Masterbias calculated by median.'
 
     mbias_frame.SaveBDFFitsFrame()
-    masterFrames.bias = mbias_frame
+    masterFrames.bias.append(mbias_frame)
     
 
     print('Masterbias created.')
@@ -54,13 +54,9 @@ def CreateMasterFrames(path):
 
         med_data_d[med_data_d < 0] =0                       # Wyzerowuję wartości ujemne; konieczne w przypadku darka o krótkim czasie ekspozycji, w którym pojawiły się ujemne zliczenia po odjęciu Bias
 
-
-
-
         mdark_frame.data = med_data_d                       # zapisuje do obieku Frame
         mdark_frame.name = 'Masterdark' + str(int(mdark_frame.exp)) + '.fits'
         mdark_frame.history = 'Dark calculated by median. Bias substracted.'
-
 
         mdark_frame.SaveBDFFitsFrame()
         masterFrames.dark.append(mdark_frame)

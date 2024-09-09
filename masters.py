@@ -2,7 +2,7 @@
 
 class Masters():
     def __init__(self):
-        self.bias = None
+        self.bias = []
         self.dark = []
         self.flat = []
 
@@ -17,7 +17,11 @@ class Masters():
         for flat in self.flat:
             if (flat.filter == filter and flat.bin == bin and flat.subx == subx and flat.suby == suby):
                 return flat
-        return self.flat
-        print('[ERROR] Flat not found.')          
-        
+        print('[ERROR] Flat not found.')
+
+    def GetBiasByBinning(self, bin, subx, suby):
+        for bias in self.bias:
+            if (bias.bin == bin and bias.subx == subx and bias.suby == suby):
+                return bias        
+        print(f'[ERROR] Bias not found. Failed to find one with params: Bin {bin}, Subx {subx}, Suby {suby}')
  

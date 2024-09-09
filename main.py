@@ -34,8 +34,8 @@ from reduction import CalculateScienceFrames
 
 #endregion
 
-path = r"D:\20220106"
-#sorting_files.SortBDFFiles(path)
-CreateMasterFrames(path)
-CalculateScienceFrames(path, False)
+path = r"C:\Users\Shekkinah\Desktop\testFolder\20240427 - test backup kopia"
+sorting_files.SortBDFFiles(path)
+#CreateMasterFrames(path)
+#CalculateScienceFrames(path, False)
 

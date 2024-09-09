@@ -26,26 +26,30 @@ def SortBDFFiles(path):
                 fits_file = fits.open(join(bdf_folder_path, bdf_contains[i]))
                 fits_header = fits_file[0].header
                 fits_exptime = str(int(fits_header['EXPTIME']))
+                fits_binx = str(fits_header['XBINNING'])
+                fits_biny = str(fits_header['YBINNING'])
+                fits_subx = str(fits_header['XORGSUBF'])
+                fits_suby = str(fits_header['YORGSUBF'])
 
                 if fits_header['IMAGETYP'] == 'Bias Frame':             # tworzenie podfolderu z biasami
                     fits_file.close()
                     
-                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Bias", bdf_contains[i]))
+                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]), join(bdf_folder_path, "Bias", "Bias_" + fits_binx + 'x' + fits_biny + '_' + fits_subx + 'x' + fits_suby, bdf_contains[i]))
 
                 elif fits_header['IMAGETYP'] == 'Dark Frame':           # tworzenie podfolderu z darkami z podziałem na czas ekspozycji
                     fits_file.close()
 
-                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Dark", 'Dark_' + fits_exptime, bdf_contains[i]) )
+                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Dark", 'Dark_' + fits_exptime + '_' +  fits_binx + 'x' + fits_biny + '_' + fits_subx + 'x' + fits_suby, bdf_contains[i]) )
 
                 elif fits_header['IMAGETYP'] == 'Light Frame' or 'Flat Frame' or 'Flat Field':      # tworzenie podfolderu z flatami z podziałem na filtry
                     
                     try:
                         fits_file.close()
                         fits_filter = str(fits_header['FILTER'])
-                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_' + fits_filter, bdf_contains[i]) )
+                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_' + fits_filter + '_' + fits_binx + 'x' + fits_biny + '_' + fits_subx + 'x' + fits_suby, bdf_contains[i]) )
                     except:
                         fits_file.close()
-                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_', bdf_contains[i]) )
+                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_' +  fits_filter + '_' +  fits_binx + 'x' + fits_biny + '_' + fits_subx + 'x' + fits_suby, bdf_contains[i]))
 
 
     print('BDF files sorted.')
