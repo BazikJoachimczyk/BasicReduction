@@ -14,7 +14,7 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
             with fits.open(join(path, object, filename)) as hdull:
                 data = hdull[0].data
             
-            masterbias = masterFrames.bias
+            masterbias = masterFrames.GetBiasByBinning(fits_frame.bin, fits_frame.subx, fits_frame.suby)
             masterdark = masterFrames.GetDarkByExpTime(fits_frame.exp, fits_frame.bin, fits_frame.subx, fits_frame.suby)
             masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.bin, fits_frame.subx, fits_frame.suby)
 
