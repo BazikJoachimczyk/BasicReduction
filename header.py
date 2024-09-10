@@ -15,7 +15,6 @@ class Header:
         self.bzero = 0
         self.history = ''
         self.jd = 0
-        self.mjd = self.jd - 2400000.5
         self.object = ''
         self.ra = 0
         self.dec = 0

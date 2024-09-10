@@ -19,17 +19,17 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
             masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.bin, fits_frame.subx, fits_frame.suby)
 
             data = data - masterbias.data
-            data = data - masterdark.data
+            #data = data - masterdark.data
 
             data[data < 0] = 0
             data = data / masterflat.data 
             
             
-            
             fits_frame.data = data 
             fits_frame.name = 'out_' + filename
             fits_frame.path = join(path, object, 'Pipeline_' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
-            fits_frame.history = 'Reduction: Dark -' + str(masterdark.exp) + '; Flat -' + str(masterflat.filter)
+            #fits_frame.history = 'Reduction: Dark -' + str(masterdark.exp) + '; Flat -' + str(masterflat.filter)
+            fits_frame.history = 'Reduction: Flat -' + str(masterflat.filter)
             fits_frame.ra = Coords[0]
             fits_frame.dec = Coords[1]
 
