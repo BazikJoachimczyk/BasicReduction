@@ -35,9 +35,7 @@ def FitsFilesData(path):
 def GetCoordsFromAstrometry(path, debugMode = False):
 
     frames = listdir(path)
-
     conf.api_key = 'adwuagneiedgziwi'                   # ustawiam API (konto barbarajoachimczyk na Astrometry.net)
-
     Astrometry = AstrometryNet()
 
 

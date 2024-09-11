@@ -34,7 +34,7 @@ from reduction import CalculateScienceFrames
 
 #endregion
 
-path = r"G:\90 obserwacje\20220228"
+path = r"C:\Users\ibm\Desktop\BasicScripts\20220228"
 #sorting_files.SortBDFFiles(path)
 CreateMasterFrames(path)
 CalculateScienceFrames(path, False)
