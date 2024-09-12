@@ -46,7 +46,7 @@ class Masters():
         for flat in self.flat:
             if (flat.filter == filter and flat.bin == bin and flat.subx == subx and flat.suby == suby):
                 return flat
-        print('[ERROR] Flat not found.')
+        print(f'[ERROR] Flat not found. Failed to find one with params: Filter {filter}, Bin {bin}, Subx {subx}, Suby {suby}')
 
     def GetBiasByBinning(self, bin, subx, suby):
         for bias in self.bias:
