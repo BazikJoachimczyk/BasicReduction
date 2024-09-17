@@ -20,7 +20,6 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
 
             data = data - masterbias.data
             data = data - masterdark.data
-
             data[data < 0] = 0
             data = data / masterflat.data 
             

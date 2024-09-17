@@ -51,6 +51,9 @@ def GetCoordsFromAstrometry(path, debugMode = False):
     while Counter < 3:    
         try:
             wcs_header = Astrometry.solve_from_image(join(path,frames[0]), force_image_upload=True)
+            wcs = WCS(wcs_header)                          
+            Ra = (wcs.wcs.crval[0] *24) / 360 
+            Dec = wcs.wcs.crval[1]
             break
         except Exception as e:
             print(f"Astrometry error: {e}")
@@ -59,9 +62,5 @@ def GetCoordsFromAstrometry(path, debugMode = False):
     if Counter ==3:
         print("Astrometry Error: file not sent.")
         
-    wcs = WCS(wcs_header)                          
-
-    Ra = (wcs.wcs.crval[0] *24) / 360 
-    Dec = wcs.wcs.crval[1]
-
+  
     return Ra, Dec

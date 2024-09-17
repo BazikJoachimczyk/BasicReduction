@@ -17,8 +17,6 @@ import numpy as np
 #from os.path import isfile, join, exists
 # from astropy.io import fits
 # from astropy.io import fits
-
-
 import glob
 import time
 from itertools import chain
@@ -30,11 +28,7 @@ from building_masters import CreateMasterFrames
 from reduction import CalculateScienceFrames
 #endregion
 
-#region Global variables
-
-#endregion
-
-path = r"C:\Users\ibm\Desktop\BasicScripts\20220228"
+path = r"G:\90 obserwacje\20240626"
 #sorting_files.SortBDFFiles(path)
 CreateMasterFrames(path)
 CalculateScienceFrames(path, False)
