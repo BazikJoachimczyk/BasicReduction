@@ -6,6 +6,7 @@ import numpy as np
 from astroquery.astrometry_net import AstrometryNet
 from astroquery.astrometry_net import conf
 from astropy.wcs import WCS
+import random
 
 
 def FitsFilesData(path):
@@ -64,3 +65,44 @@ def GetCoordsFromAstrometry(path, debugMode = False):
         
   
     return Ra, Dec
+
+def Noisify(data, sigma = 1):
+    mean = data.mean()
+    std = data.std() 
+           
+    result = np.zeros((len(data),len(data[0])))
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if (data[i][j] <= mean+(std*sigma)):
+                result[i][j] = data[i][j]
+            else:
+                result[i][j] = random.randrange(int(mean-std), int(mean+std))
+
+    return result
+
+def SectorsNoisify(data, sectorColumns, sectorRows):
+    width = len(data)
+    height = len(data[0])
+
+    columnStep = int(width/sectorColumns)
+    rowStep = int(height/sectorRows)              
+
+    result = np.zeros((len(data),len(data[0])))
+    for rowOffset in range(sectorRows):
+        for columnOffset in range(sectorColumns):
+            #create temp array
+            sectorData = np.zeros((columnStep, rowStep))
+            
+            #select sector
+            for i in range(rowOffset*rowStep, rowOffset*rowStep+rowStep):        
+                for j in range(columnOffset*columnStep, columnOffset*columnStep+columnStep):                                                             
+                    sectorData[i-rowOffset*rowStep][j-columnOffset*columnStep] = data[i][j]  
+
+            #fix sector
+            sectorData = Noisify(sectorData, 1)
+            
+            #return sector to original
+            for i in range(rowOffset*rowStep, rowOffset*rowStep+rowStep):        
+                for j in range(columnOffset*columnStep, columnOffset*columnStep+columnStep):                                                            
+                    result[i][j] = sectorData[i-rowOffset*rowStep][j-columnOffset*columnStep]                                              
+    return result

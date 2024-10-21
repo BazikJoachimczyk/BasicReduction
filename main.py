@@ -28,8 +28,8 @@ from building_masters import CreateMasterFrames
 from reduction import CalculateScienceFrames
 #endregion
 
-path = r"G:\90 obserwacje\20240626"
+path = r"D:\90 obserwacje\20220804"
 #sorting_files.SortBDFFiles(path)
 CreateMasterFrames(path)
-CalculateScienceFrames(path, False)
+CalculateScienceFrames(path, True)
 

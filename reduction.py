@@ -26,7 +26,7 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
             
             fits_frame.data = data 
             fits_frame.name = 'out_' + filename
-            fits_frame.path = join(path, object, 'Pipeline_' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
+            fits_frame.path = join(path, object, 'Pipeline_sigma_ujemne' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
             #fits_frame.history = 'Reduction: Dark -' + str(masterdark.exp) + '; Flat -' + str(masterflat.filter)
             fits_frame.history = 'Reduction: Dark - ' + str(int(masterdark.exp)) +  ', Flat -' + str(masterflat.filter)
             fits_frame.ra = Coords[0]

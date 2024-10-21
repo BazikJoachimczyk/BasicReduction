@@ -2,7 +2,7 @@ from os import listdir
 from os.path import join
 from frame import Frame
 import numpy as np
-from utils import FitsFilesData
+from utils import FitsFilesData, Noisify, SectorsNoisify
 from masters import Masters
 
 masterFrames = Masters()  
@@ -71,6 +71,8 @@ def CreateMasterFrames(path):
         data_f = data_f - masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data      
 
         med_data_f = np.median(data_f, axis=0)
+        med_data_f = Noisify(med_data_f) # globalne znalezienie smug i nalozenie szumu
+        med_data_f = SectorsNoisify(med_data_f, 100,100) # nakladanie szumu sektorowo
         norm_data_f = med_data_f / np.median(med_data_f)
 
         
