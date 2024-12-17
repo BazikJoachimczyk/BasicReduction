@@ -2,10 +2,10 @@ from os.path import join, exists
 from os import listdir, makedirs
 from building_masters import masterFrames
 from frame import Frame
-from utils import GetCoordsFromAstrometry
+from utils import GetCoordsFromAstrometry, CutSubframe
 from astropy.io import fits
 
-def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLICY
+def Reduction(path, object, filename, Coords, subframeParams = None):                 # WERSJA Z TABLICY
 
             
             fits_frame = Frame(join(path, object, filename))
@@ -14,6 +14,9 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
             with fits.open(join(path, object, filename)) as hdull:
                 data = hdull[0].data
             
+            if (subframeParams != None):
+                 data = CutSubframe(data, subframeParams)
+
             masterbias = masterFrames.GetBiasByBinning(fits_frame.bin, fits_frame.subx, fits_frame.suby)
             masterdark = masterFrames.GetDarkByExpTime(fits_frame.exp, fits_frame.bin, fits_frame.subx, fits_frame.suby)
             masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.bin, fits_frame.subx, fits_frame.suby)
@@ -38,7 +41,7 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
 
             fits_frame.SaveFitsFullHeader(join(path, object, filename))
 
-def CalculateScienceFrames(path, debugMode = False):
+def CalculateScienceFrames(path, debugMode = False, subframeParams = None):
 
     objects = listdir(path)             # lista obiektów obserwowanych w nocy
     objects.remove('bdf')               # wyrzucam folder BDF bo to nie obiekt
@@ -50,7 +53,7 @@ def CalculateScienceFrames(path, debugMode = False):
 
         for frame in frames:
             if frame.endswith('.fit') or frame.endswith('.fits'):
-                Reduction(path, object, frame, Coords)
+                Reduction(path, object, frame, Coords, subframeParams=subframeParams)
 
 
             print('Out: ', frame)

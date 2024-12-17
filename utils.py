@@ -6,9 +6,10 @@ import numpy as np
 from astroquery.astrometry_net import AstrometryNet
 from astroquery.astrometry_net import conf
 from astropy.wcs import WCS
+from subframeParams import SubframeParams
 
 
-def FitsFilesData(path):
+def FitsFilesData(path, subframeParams = None):
     """
     Z plików fits w danym folderze tworzy macierz danych do wykonywania obliczeń.
 
@@ -26,7 +27,11 @@ def FitsFilesData(path):
                 # bzero = np.uint16(header['BZERO'])
                 # data += bzero
                 # print(bzero)
-                master_list.append(data)
+                if (subframeParams == None):
+                    master_list.append(data)
+                else:
+                    master_list.append(CutSubframe(data, subframeParams))
+
     master_list = np.array(master_list)
 
 
@@ -64,3 +69,13 @@ def GetCoordsFromAstrometry(path, debugMode = False):
         
   
     return Ra, Dec
+
+#offset params start from bottom left corner
+def CutSubframe(data, subframeParams : SubframeParams):
+    result = np.zeros((subframeParams.Width, subframeParams.Height))
+
+    for row in range(subframeParams.OffsetX, subframeParams.Width + subframeParams.OffsetX):
+        for column in range(subframeParams.OffsetY, subframeParams.Height + subframeParams.OffsetY):            
+            result[column - subframeParams.OffsetY][row - subframeParams.OffsetX] = data[column][row]            
+
+    return result

@@ -4,32 +4,18 @@
 
 #region Imports
 
-
-from astropy.time import Time
-from astropy import units as u
-
-from astropy.visualization import ZScaleInterval
-
-import matplotlib.pyplot as plt 
-import numpy as np 
-
-# from os import renames
-#from os.path import isfile, join, exists
-# from astropy.io import fits
-# from astropy.io import fits
-import glob
-import time
-from itertools import chain
-
 from masters import Masters
 import sorting_files
+from subframeParams import SubframeParams
 
 from building_masters import CreateMasterFrames
 from reduction import CalculateScienceFrames
 #endregion
 
-path = r"G:\90 obserwacje\20240626"
+path = r"C:\Users\Hofek\Documents\!UMK\!Bazik\subframe\20220804"
+subframeParams = SubframeParams(500,500,250,250)
+
 #sorting_files.SortBDFFiles(path)
-CreateMasterFrames(path)
-CalculateScienceFrames(path, False)
+CreateMasterFrames(path, subframeParams)
+CalculateScienceFrames(path, True, subframeParams)
 
