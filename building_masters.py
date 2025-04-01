@@ -52,37 +52,35 @@ def CreateMasterFrames(path):
         mdark_frame.history = 'Dark calculated by median. Bias substracted.'
         mdark_frame.SaveBDFFitsFrame()
         masterFrames.dark.append(mdark_frame)
-
     print('Masterdark created.')
 
     ### Tworzenie masterflatów
-
     flat_subpath = listdir(flat_path)
-
+    print('flat subpath = ', flat_subpath)
+    print('flat subpath len = ', len(flat_subpath))
     for i in range(len(flat_subpath)):
-
         flat_sub_subpath = listdir(join(flat_path,flat_subpath[i]))
         mflat_frame = Frame(join(flat_path, flat_subpath[i]))
         mflat_frame.OpenHeader(join(flat_path, flat_subpath[i], flat_sub_subpath[-1]))
-
-
         data_f = FitsFilesData(join(flat_path, flat_subpath[i]))
         data_f = data_f - masterFrames.GetBiasByBinning(mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data
-        data_f = data_f - masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data      
-
+        dark_for_flat = masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby, mflat_frame.temp)      
+        if dark_for_flat == None:
+            print('Flat build without dark: ', str(join(flat_path, flat_subpath[i])))
+            continue
+        else:
+            data_f = data_f - dark_for_flat.data
+        #data_f = data_f - masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data      
         med_data_f = np.median(data_f, axis=0)
         med_data_f = Noisify(med_data_f) # globalne znalezienie smug i nalozenie szumu
         med_data_f = SectorsNoisify(med_data_f, 100,100) # nakladanie szumu sektorowo
         norm_data_f = med_data_f / np.median(med_data_f)
-
-        
         mflat_frame.data = norm_data_f
         mflat_frame.name = 'masterflat' + '_' + str(mflat_frame.filter) + '.fits'
+        print('mflat name = ', mflat_frame.name)
         mflat_frame.history = 'Masterflat normalized. Bias and dark substracted.'
-
         mflat_frame.SaveBDFFitsFrame()
         masterFrames.flat.append(mflat_frame)
-
     print('Masterflat created.')
 
     return

@@ -8,11 +8,11 @@ class Masters():
         self.dark = []
         self.flat = []
 
-    def GetDarkByExpTime(self, exp, bin, subx, suby):
+    def GetDarkByExpTime(self, exp, bin, subx, suby, temp):
 
         found_dark = None
         for dark in self.dark:
-            if (dark.exp == exp and dark.bin == bin and dark.subx == subx and dark.suby == suby):
+            if (dark.exp == exp and dark.bin == bin and dark.subx == subx and dark.suby == suby and dark.temp == temp):
                 found_dark = dark
             
         # if found_dark == None:
