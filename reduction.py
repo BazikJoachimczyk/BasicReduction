@@ -4,10 +4,10 @@ from building_masters import masterFrames
 from frame import Frame
 from utils import GetCoordsFromAstrometry
 from astropy.io import fits
+import json
 
 def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLICY
 
-            
             fits_frame = Frame(join(path, object, filename))
             fits_frame.OpenHeader(join(path, object, filename))
 
@@ -27,14 +27,12 @@ def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLIC
             fits_frame.data = data 
             fits_frame.name = 'out_' + filename
             fits_frame.path = join(path, object, 'Pipeline_sigma_ujemne' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
-            #fits_frame.history = 'Reduction: Dark -' + str(masterdark.exp) + '; Flat -' + str(masterflat.filter)
             fits_frame.history = 'Reduction: Dark - ' + str(int(masterdark.exp)) +  ', Flat -' + str(masterflat.filter)
             fits_frame.ra = Coords[0]
             fits_frame.dec = Coords[1]
 
             if not exists(fits_frame.path):
                 makedirs(fits_frame.path)
-
 
             fits_frame.SaveFitsFullHeader(join(path, object, filename))
 
@@ -47,11 +45,12 @@ def CalculateScienceFrames(path, debugMode = False):
         Coords = GetCoordsFromAstrometry(join(path,object), debugMode)
 
         frames = listdir(join(path ,object))
-
         for frame in frames:
             if frame.endswith('.fit') or frame.endswith('.fits'):
                 Reduction(path, object, frame, Coords)
-
-
-            print('Out: ', frame)
+                info = {
+                "Stage": 1,
+                "Description": frame
+                    }
+                print(json.dumps(info))
     return

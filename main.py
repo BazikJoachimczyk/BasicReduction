@@ -20,17 +20,17 @@ from reduction import CalculateScienceFrames
 
 def run():
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument("-sort", type:bool, help="Sorts calibration files.", required=False, default=True)
-    parser.add_argument("-mast", type:bool, help="Builds master frames from sorted files.", required=False, default=True)
-    parser.add_argument("-red", type:bool, help="Performs reduction process.", required=False, default=True)
-    parser.add_argument("-fc", type:str, choices = ["noisify", "normal"], help="Choose the type of flat correction.", required=False, default="normal")
-    parser.add_argument("-path", type:str, help = "Path to the observation file.", required=True)
+    parser.add_argument("-sort", type=bool, help="Sorts calibration files.", required=False, default=False)
+    parser.add_argument("-mast", type=bool, help="Builds master frames from sorted files.", required=False, default=True)
+    parser.add_argument("-red", type=bool, help="Performs reduction process.", required=False, default=True)
+    parser.add_argument("-fc", type=str, choices = ["noisify", "normal"], help="Choose the type of flat correction.", required=False, default="normal")
+    parser.add_argument("-path", type=str, help = "Path to the observation file.", required=True)
     args =  parser.parse_args()
 
     if args.sort == True:
         SortBDFFiles(args.path)
     if args.mast == True:
-        CreateMasterFrames(args.path)
+        CreateMasterFrames(args.path, flat_correction=args.fc)
     if args.red == True:
         CalculateScienceFrames(path=args.path, debugMode=True)
 

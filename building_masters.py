@@ -4,10 +4,11 @@ from frame import Frame
 import numpy as np
 from utils import FitsFilesData, Noisify, SectorsNoisify
 from masters import Masters
+import json
 
 masterFrames = Masters()  
 
-def CreateMasterFrames(path):
+def CreateMasterFrames(path, flat_correction:str):
     """
     Przeszukuje folder z obserwacji po ramki kalibracyjne, z których tworzy masterbiasy, masterdarki i masterflaty.
 
@@ -23,8 +24,14 @@ def CreateMasterFrames(path):
     flat_path = join(path, 'bdf', 'Flat')
 
 
-    ### Tworzenie masterbias:
+    ### BIAS
     bias_subpath = listdir(bias_path)
+    info = {
+        "Stage": 1,
+        "Description": "Calculating masterbias frames."
+    }
+    print(json.dumps(info))
+
     for i in range(len(bias_subpath)):
         bias_sub_subpath = listdir(join(bias_path,bias_subpath[i])) # lista plików w podfolderze
         mbias_frame = Frame(join(bias_path, bias_subpath[i]))
@@ -35,10 +42,15 @@ def CreateMasterFrames(path):
         mbias_frame.history = 'Masterbias calculated by median.'
         mbias_frame.SaveBDFFitsFrame()
         masterFrames.bias.append(mbias_frame)
-    print('Masterbias created.')
 
-    ### Tworzenie masterdarków:
+    ### DARK
     dark_subpath = listdir(dark_path)               # lista folderów darków różnej długości
+    info = {
+        "Stage": 2,
+        "Description": "Calculating masterdark frames."
+    }
+    print(json.dumps(info))
+
     for i in range(len(dark_subpath)):
         dark_sub_subpath = listdir(join(dark_path,dark_subpath[i])) # lista plików w podfolderze
         mdark_frame = Frame(join(dark_path, dark_subpath[i]))
@@ -52,12 +64,15 @@ def CreateMasterFrames(path):
         mdark_frame.history = 'Dark calculated by median. Bias substracted.'
         mdark_frame.SaveBDFFitsFrame()
         masterFrames.dark.append(mdark_frame)
-    print('Masterdark created.')
 
-    ### Tworzenie masterflatów
+    ### FLAT
     flat_subpath = listdir(flat_path)
-    print('flat subpath = ', flat_subpath)
-    print('flat subpath len = ', len(flat_subpath))
+    info = {
+        "Stage": 3,
+        "Description": "Calculating masterflat frames."
+    }
+    print(json.dumps(info))
+
     for i in range(len(flat_subpath)):
         flat_sub_subpath = listdir(join(flat_path,flat_subpath[i]))
         mflat_frame = Frame(join(flat_path, flat_subpath[i]))
@@ -66,21 +81,25 @@ def CreateMasterFrames(path):
         data_f = data_f - masterFrames.GetBiasByBinning(mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data
         dark_for_flat = masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby, mflat_frame.temp)      
         if dark_for_flat == None:
-            print('Flat build without dark: ', str(join(flat_path, flat_subpath[i])))
+            print('No masterdark frame available for flat: ', str(join(flat_path, flat_subpath[i]), ': build without masterdark.'))
             continue
         else:
-            data_f = data_f - dark_for_flat.data
-        #data_f = data_f - masterFrames.GetDarkByExpTime(mflat_frame.exp, mflat_frame.bin, mflat_frame.subx, mflat_frame.suby).data      
+            data_f = data_f - dark_for_flat.data  
         med_data_f = np.median(data_f, axis=0)
-        med_data_f = Noisify(med_data_f) # globalne znalezienie smug i nalozenie szumu
-        med_data_f = SectorsNoisify(med_data_f, 100,100) # nakladanie szumu sektorowo
+        if flat_correction == 'noisify':
+            med_data_f = Noisify(med_data_f) # globalne znalezienie smug i nalozenie szumu
+            med_data_f = SectorsNoisify(med_data_f, 100,100) # nakladanie szumu sektorowo
         norm_data_f = med_data_f / np.median(med_data_f)
         mflat_frame.data = norm_data_f
         mflat_frame.name = 'masterflat' + '_' + str(mflat_frame.filter) + '.fits'
-        print('mflat name = ', mflat_frame.name)
         mflat_frame.history = 'Masterflat normalized. Bias and dark substracted.'
         mflat_frame.SaveBDFFitsFrame()
         masterFrames.flat.append(mflat_frame)
-    print('Masterflat created.')
+
+    # info = {
+    #     "Stage": 4,
+    #     "Description": "Master frames done."
+    # }
+    # print(json.dumps(info))
 
     return

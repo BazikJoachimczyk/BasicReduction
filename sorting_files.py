@@ -2,6 +2,7 @@
 import os
 from os.path import isfile, join, exists
 from astropy.io import fits
+import json
 
 def SortBDFFiles(path):                   
     """
@@ -13,15 +14,19 @@ def SortBDFFiles(path):
     Returns:
     - potwierdzenie posortowania plików fits.
     """   
+    info = {
+            "Stage": 1,
+            "Description": "Sorting calibration frames."
+            }
+    print(json.dumps(info))
 
     subfolders = os.listdir(path)
     for file in (subfolders):
         if file == 'bdf':                       # znajduje folder "bdf" i sortuje pliki według typu
 
             bdf_folder_path = join(path, "bdf")
-            
             bdf_contains = os.listdir(bdf_folder_path)                 # tworzy listę plików w folderze bdf
-
+            
             for i in range(len(bdf_contains)):                      # sprawdza header każdego pliku w celu dopasowania do odpowiedniego podfolderu
                 fits_file = fits.open(join(bdf_folder_path, bdf_contains[i]))
                 fits_header = fits_file[0].header
@@ -51,6 +56,4 @@ def SortBDFFiles(path):
                         fits_file.close()
                         fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", 'Flat_' +  fits_filter + '_' +  fits_binx + 'x' + fits_biny + '_' + fits_subx + 'x' + fits_suby, bdf_contains[i]))
 
-
-    print('BDF files sorted.')
     return 
