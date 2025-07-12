@@ -1,40 +1,46 @@
 from os.path import join, exists
 from os import listdir, makedirs
-from building_masters import masterFrames
 from frame import Frame
 from utils import GetCoordsFromAstrometry
 from astropy.io import fits
 import json
+from masters import Masters
+
 
 def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLICY
 
-            fits_frame = Frame(join(path, object, filename))
-            fits_frame.OpenHeader(join(path, object, filename))
+    masterFrames = Masters(path)
+    masterFrames.FillMasters()
 
-            with fits.open(join(path, object, filename)) as hdull:
-                data = hdull[0].data
-            
-            masterbias = masterFrames.GetBiasByBinning(fits_frame.bin, fits_frame.subx, fits_frame.suby)
-            masterdark = masterFrames.GetDarkByExpTime(fits_frame.exp, fits_frame.bin, fits_frame.subx, fits_frame.suby, fits_frame.temp)
-            masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.bin, fits_frame.subx, fits_frame.suby)
+    print(masterFrames.dark[0].data)
 
-            data = data - masterbias.data
-            data = data - masterdark.data
-            data[data < 0] = 0
-            data = data / masterflat.data 
-            
-            
-            fits_frame.data = data 
-            fits_frame.name = 'out_' + filename
-            fits_frame.path = join(path, object, 'Pipeline_sigma_ujemne' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
-            fits_frame.history = 'Reduction: Dark - ' + str(int(masterdark.exp)) +  ', Flat -' + str(masterflat.filter)
-            fits_frame.ra = Coords[0]
-            fits_frame.dec = Coords[1]
+    fits_frame = Frame(join(path, object, filename))
+    fits_frame.OpenHeader(join(path, object, filename))
 
-            if not exists(fits_frame.path):
-                makedirs(fits_frame.path)
+    with fits.open(join(path, object, filename)) as hdull:
+        data = hdull[0].data
+    
+    masterbias = masterFrames.GetBiasByBinning(binx = fits_frame.binx, biny = fits_frame.biny, subx = fits_frame.subx, suby = fits_frame.suby)
+    masterdark = masterFrames.GetDarkByExpTime(fits_frame.exp, fits_frame.binx, fits_frame.biny, fits_frame.subx, fits_frame.suby, fits_frame.temp)
+    masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.binx, fits_frame.biny, fits_frame.subx, fits_frame.suby)
 
-            fits_frame.SaveFitsFullHeader(join(path, object, filename))
+    data = data - masterbias.data
+    data = data - masterdark.data
+    data[data < 0] = 0
+    data = data / masterflat.data 
+    
+    
+    fits_frame.data = data 
+    fits_frame.name = 'out_' + filename
+    fits_frame.path = join(path, object, 'Pipeline' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
+    fits_frame.history = 'Reduction: Dark - ' + str(int(masterdark.exp)) +  ', Flat -' + str(masterflat.filter)
+    fits_frame.ra = Coords[0]
+    fits_frame.dec = Coords[1]
+
+    if not exists(fits_frame.path):
+        makedirs(fits_frame.path)
+
+    fits_frame.SaveFitsFullHeader(join(path, object, filename))
 
 def CalculateScienceFrames(path, debugMode = False):
 

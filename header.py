@@ -8,7 +8,8 @@ class Header:
         self.exp = 0
         self.temp = 0
         self.filter = ''
-        self.bin = []
+        self.binx = 0
+        self.biny = 0
         self.subx = 0
         self.suby = 0
         self.bscale = 0
@@ -25,7 +26,8 @@ class Header:
         self.imagetype = fits_header['IMAGETYP']
         self.exp = fits_header['EXPTIME']
         self.temp = fits_header['SET-TEMP']
-        self.bin = str(fits_header['XBINNING']) + ' ' + str(fits_header['YBINNING']) 
+        self.binx = fits_header['XBINNING']
+        self.biny = fits_header['YBINNING']
         self.subx =  str(fits_header['XORGSUBF']) 
         self.suby =  str(fits_header['YORGSUBF'])
         self.bscale = fits_header['BSCALE']
@@ -34,5 +36,18 @@ class Header:
         self.object = fits_header['OBJECT']
         if 'FILTER' in fits_header:
             self.filter = fits_header['FILTER']
+        fits_file.close()
 
+    def OpenBDFHeader(self, path):
+        fits_file = fits.open(path)
+        fits_header = fits_file[0].header
+        self.imagetype = fits_header['IMAGETYP']
+        self.exp = fits_header['EXPTIME']
+        self.temp = fits_header['SET_TEMP']
+        self.binx = fits_header['XBINNING']
+        self.biny = fits_header['YBINNING']
+        self.subx =  str(fits_header['XORGSUBF']) 
+        self.suby =  str(fits_header['YORGSUBF'])
+        if 'FILTER' in fits_header:
+            self.filter = fits_header['FILTER']
         fits_file.close()

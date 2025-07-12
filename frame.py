@@ -33,24 +33,26 @@ class Frame(Header):
     
 
     def SaveBDFFitsFrame(self):
-        hdu = fits.PrimaryHDU(data = (self.data - self.bzero))
+        hdu = fits.PrimaryHDU(data = (self.data ))#- self.bzero))
         hdull = fits.HDUList([hdu])
         save_header = hdull[0].header
         save_header['IMAGETYP'] = self.imagetype
         save_header['EXPTIME'] = self.exp
         save_header['SET_TEMP'] = self.temp 
         save_header['FILTER'] = self.filter
-        save_header['BINNING'] = self.bin 
-        save_header['SUBFRAME'] = str(self.subx) + ' ' + str(self.suby)
+        save_header['XORGSUBF'] = self.subx
+        save_header['XBINNING'] = self.binx
+        save_header['YBINNING'] = self.biny
+        save_header['YORGSUBF'] = self.suby
         save_header['BITPIX'] = self.bitpix
-        save_header['BSCALE'] = self.bscale
-        save_header['BZERO'] = self.bzero
+        #save_header['BSCALE'] = self.bscale
+        #save_header['BZERO'] = self.bzero
         save_header['HISTORY'] = self.history
         hdull.writeto(join(self.path, self.name), overwrite=True)
 
 
-    def SaveFitsFullHeader(self, headerPath):                         
-        data = np.array((self.data - self.bzero), dtype = np.float32)        
+    def SaveFitsFullHeader(self, headerPath): 
+        data = np.array((self.data - self.bzero), dtype = np.float32)             
 
         hdu = fits.PrimaryHDU(data)
         hdull = fits.HDUList([hdu]) 

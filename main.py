@@ -21,7 +21,7 @@ from reduction import CalculateScienceFrames
 def run():
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-sort", type=bool, help="Sorts calibration files.", required=False, default=False)
-    parser.add_argument("-mast", type=bool, help="Builds master frames from sorted files.", required=False, default=True)
+    parser.add_argument("-mast", type=bool, help="Builds master frames from sorted files.", required=False, default=False)
     parser.add_argument("-red", type=bool, help="Performs reduction process.", required=False, default=True)
     parser.add_argument("-fc", type=str, choices = ["noisify", "normal"], help="Choose the type of flat correction.", required=False, default="normal")
     parser.add_argument("-path", type=str, help = "Path to the observation file.", required=True)

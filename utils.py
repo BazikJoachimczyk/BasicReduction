@@ -30,8 +30,25 @@ def FitsFilesData(path):
                 master_list.append(data)
     master_list = np.array(master_list)
 
-
     return master_list
+
+def FitsFilesDataFromList(file_list):
+    """
+    Z plików fits w zadanej liście tworzy macierz danych do wykonywania obliczeń.
+
+    Parameters:
+    - file_list: lista pełnych ścieżek do plików .fits lub .fit
+
+    Returns:
+    - ndarray: tablica 3D typu np.ndarray 
+    """
+    data_list = []
+    for path in file_list:
+        if path.endswith('.fits') or path.endswith('.fit'):
+            with fits.open(path) as hdul:
+                data = hdul[0].data
+                data_list.append(data)
+    return np.array(data_list)
 
 def GetCoordsFromAstrometry(path, debugMode = False):
 
