@@ -1,59 +1,58 @@
-#from os import listdir, makedirs, renames
-import os
-from os.path import isfile, join, exists
-from astropy.io import fits
-import json
+from os import listdir, rename, makedirs
+from astropy.nddata import CCDData
+from os.path import join, exists
+from utils import stage_print
 
-def SortBDFFiles(path):                   
-    """
-    Sortuje pliki w folderze BDF na osobne foldery z biasami, darkami i flatami.
+from os import listdir, rename, makedirs
+from astropy.nddata import CCDData
+from os.path import join, exists
+from utils import stage_print
 
-    Parameters:
-    - path: ścieżka do folderu danych obserwacyjnych
+def sort_bdf(path: str) -> None:
+    stage_print("1", "Sorting bdf files.")
 
-    Returns:
-    - potwierdzenie posortowania plików fits.
-    """   
-    info = {
-            "Stage": 1,
-            "Description": "Sorting calibration frames."
-            }
-    print(json.dumps(info))
+    folders = listdir(path)
+    for folder in folders:
+        if folder.lower() == 'bdf' and folder != 'bdf':
+            original = join(path, folder)
+            target = join(path, 'bdf')
+            rename(original, target)
+            print(f"Renamed {folder} -> bdf")
+            break
 
-    subfolders = os.listdir(path)
-    for file in (subfolders):
-        if file == 'bdf':                       # znajduje folder "bdf" i sortuje pliki według typu
+    bdf_folder = join(path, 'bdf')
+    for file in listdir(bdf_folder):
+        if file.endswith('.fit') or file.endswith('.fits'):
+            filepath_full = join(bdf_folder, file)
+            bdf_fits = CCDData.read(filepath_full, unit='adu')
 
-            bdf_folder_path = join(path, "bdf")
-            bdf_contains = os.listdir(bdf_folder_path)                 # tworzy listę plików w folderze bdf
-            
-            for i in range(len(bdf_contains)):                      # sprawdza header każdego pliku w celu dopasowania do odpowiedniego podfolderu
-                fits_file = fits.open(join(bdf_folder_path, bdf_contains[i]))
-                fits_header = fits_file[0].header
-                #fits_exptime = str(int(fits_header['EXPTIME']))
-                #fits_binx = str(fits_header['XBINNING'])
-                #fits_biny = str(fits_header['YBINNING'])
-                #fits_subx = str(fits_header['XORGSUBF'])
-                #fits_suby = str(fits_header['YORGSUBF'])
+            imagetyp = bdf_fits.header['IMAGETYP']
+            temp = str(int(bdf_fits.header['SET-TEMP']))
+            exp = str(int(bdf_fits.header.get('EXPTIME', 0)))
+            binx = str(int(bdf_fits.header['XBINNING']))
+            biny = str(int(bdf_fits.header['YBINNING']))
+            subx = str(int(bdf_fits.header['XORGSUBF']))
+            suby = str(int(bdf_fits.header['YORGSUBF']))
 
-                if fits_header['IMAGETYP'] == 'Bias Frame':             # tworzenie podfolderu z biasami
-                    fits_file.close()
-                    
-                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]), join(bdf_folder_path, "Bias", bdf_contains[i]))
+            if imagetyp == 'Bias Frame':
+                folderpath = join(bdf_folder, f"Bias_temp{temp}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+                if not exists(folderpath):
+                    makedirs(folderpath)
+                rename(filepath_full, join(folderpath, file))
 
-                elif fits_header['IMAGETYP'] == 'Dark Frame':           # tworzenie podfolderu z darkami z podziałem na czas ekspozycji
-                    fits_file.close()
+            elif imagetyp == 'Dark Frame':
+                folderpath = join(bdf_folder, f"Dark_exp{exp}_temp{temp}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+                if not exists(folderpath):
+                    makedirs(folderpath)
+                rename(filepath_full, join(folderpath, file))
 
-                    fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Dark",  bdf_contains[i]) )
+            elif imagetyp in ['Flat Frame', 'Light Frame', 'Flat Field']:
+                filt = str(bdf_fits.header['FILTER'])
+                folderpath = join(bdf_folder, f"Flat_{filt}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+                if not exists(folderpath):
+                    makedirs(folderpath)
+                rename(filepath_full, join(folderpath, file))
 
-                elif fits_header['IMAGETYP'] == 'Light Frame' or 'Flat Frame' or 'Flat Field':      # tworzenie podfolderu z flatami z podziałem na filtry
-                    
-                    try:
-                        fits_file.close()
-                        #fits_filter = str(fits_header['FILTER'])
-                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat", bdf_contains[i]) )
-                    except:
-                        fits_file.close()
-                        fits_file = os.renames(join(bdf_folder_path, bdf_contains[i]),join(bdf_folder_path, "Flat",  bdf_contains[i]))
-
-    return 
+            else:
+                stage_print('-1', 'Unreckognizable imagetype.')
+                raise ValueError(f'Unreckognizable imagetype: {file}.')

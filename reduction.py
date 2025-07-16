@@ -1,62 +1,77 @@
 from os.path import join, exists
 from os import listdir, makedirs
-from frame import Frame
-from utils import GetCoordsFromAstrometry
-from astropy.io import fits
-import json
-from masters import Masters
+from utils import stage_print, get_bias, get_dark, get_flat
+from astropy.nddata import CCDData
+import ccdproc
+
+def reduction(path: str, flat_path: str = None) -> None:
+    stage_print("1", "Science frames reduction.")
+    folders = listdir(path)
+
+    if 'bdf' in folders:
+        folders.remove('bdf')
+    else:
+        raise ValueError(f"No bdf folder found in: {path}")
+
+    for folder in folders:
+        folder_path = join(path, folder)
+        science_files = listdir(folder_path)
+
+        for science_frame in science_files:
+            if not (science_frame.endswith('.fit') or science_frame.endswith('.fits')):
+                continue
+
+            science_frame_path = join(folder_path, science_frame)
+            science = CCDData.read(science_frame_path, unit='adu')
+
+            exp = float(science.header['EXPTIME'])
+            temp = str(int(science.header['SET-TEMP']))
+            filt = str(science.header['FILTER'])
+            binx = str(int(science.header['XBINNING']))
+            biny = str(int(science.header['YBINNING']))
+            subx = str(int(science.header['XORGSUBF']))
+            suby = str(int(science.header['YORGSUBF']))
 
 
-def Reduction(path, object, filename, Coords):                 # WERSJA Z TABLICY
+            masterbias_path = get_bias(path=path, temp=temp, binx=binx, biny=biny, subx=subx, suby=suby)
+            if masterbias_path is not None:
+                masterbias = CCDData.read(masterbias_path, unit='adu')
+            else:
+                raise ValueError(f"No matching bias found for: {science_frame_path}")
 
-    masterFrames = Masters(path)
-    masterFrames.FillMasters()
+            masterdark_path = get_dark(path=path, exp=str(int(exp)), temp=temp, binx=binx, biny=biny, subx=subx, suby=suby)
+            if masterdark_path is not None:
+                masterdark = CCDData.read(masterdark_path, unit='adu')
+            else:
+                raise ValueError(f"No matching dark found for: {science_frame_path}")
 
-    print(masterFrames.dark[0].data)
+            if flat_path is not None:
+                masterflat_path = flat_path
+            else:
+                masterflat_path = get_flat(path=path, filt=filt, binx=binx, biny=biny, subx=subx, suby=suby)
 
-    fits_frame = Frame(join(path, object, filename))
-    fits_frame.OpenHeader(join(path, object, filename))
+            if masterflat_path is not None:
+                masterflat = CCDData.read(masterflat_path, unit='adu')
+            else:
+                raise ValueError(f"No matching flat found for: {science_frame_path}")
+            
+            science_bias_corr = ccdproc.subtract_bias(science, masterbias)
+            science_bias_corr.header['HISTORY'] = f"Bias subtracted using {masterbias_path}"
+            science_dark_corr = ccdproc.subtract_dark(
+                science_bias_corr,
+                masterdark,
+                scale=False,
+                data_exposure=exp * u.second,
+                dark_exposure=float(masterdark.header['EXPTIME']) * u.second
+            )
+            science_dark_corr.header['HISTORY'] = f"Dark subtracted using {masterdark_path}"
+            science_flat_corr = ccdproc.flat_correct(science_dark_corr, masterflat)
+            science_flat_corr.header['HISTORY'] = f"Flat-field corrected using {masterflat_path}"
+            science_flat_corr.header['HISTORY'] = "Reduced using AstroLog BasicReduction pipeline"
 
-    with fits.open(join(path, object, filename)) as hdull:
-        data = hdull[0].data
-    
-    masterbias = masterFrames.GetBiasByBinning(binx = fits_frame.binx, biny = fits_frame.biny, subx = fits_frame.subx, suby = fits_frame.suby)
-    masterdark = masterFrames.GetDarkByExpTime(fits_frame.exp, fits_frame.binx, fits_frame.biny, fits_frame.subx, fits_frame.suby, fits_frame.temp)
-    masterflat = masterFrames.GetFlatByFilter(fits_frame.filter, fits_frame.binx, fits_frame.biny, fits_frame.subx, fits_frame.suby)
+            science_pipeline_path = join(path, folder, 'Pipeline')
+            if not exists(science_pipeline_path):
+                makedirs(science_pipeline_path)
+            science_flat_corr.write(join(science_pipeline_path, science_frame), overwrite=True)
 
-    data = data - masterbias.data
-    data = data - masterdark.data
-    data[data < 0] = 0
-    data = data / masterflat.data 
-    
-    
-    fits_frame.data = data 
-    fits_frame.name = 'out_' + filename
-    fits_frame.path = join(path, object, 'Pipeline' + fits_frame.filter + '_' + str(int(fits_frame.exp)))
-    fits_frame.history = 'Reduction: Dark - ' + str(int(masterdark.exp)) +  ', Flat -' + str(masterflat.filter)
-    fits_frame.ra = Coords[0]
-    fits_frame.dec = Coords[1]
-
-    if not exists(fits_frame.path):
-        makedirs(fits_frame.path)
-
-    fits_frame.SaveFitsFullHeader(join(path, object, filename))
-
-def CalculateScienceFrames(path, debugMode = False):
-
-    objects = listdir(path)             # lista obiektów obserwowanych w nocy
-    objects.remove('bdf')               # wyrzucam folder BDF bo to nie obiekt
-    for object in objects:              # pętla dla folderów każdego obserwowanego obiektu
-                                        # wkradam się z wyznaczeniem współrzędnych na podstawie jednego zdjęcia
-        Coords = GetCoordsFromAstrometry(join(path,object), debugMode)
-
-        frames = listdir(join(path ,object))
-        for frame in frames:
-            if frame.endswith('.fit') or frame.endswith('.fits'):
-                Reduction(path, object, frame, Coords)
-                info = {
-                "Stage": 1,
-                "Description": frame
-                    }
-                print(json.dumps(info))
-    return
+            

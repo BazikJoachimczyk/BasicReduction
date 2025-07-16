@@ -7,6 +7,7 @@ from astroquery.astrometry_net import AstrometryNet
 from astroquery.astrometry_net import conf
 from astropy.wcs import WCS
 import random
+import json
 
 
 def FitsFilesData(path):
@@ -123,3 +124,53 @@ def SectorsNoisify(data, sectorColumns, sectorRows):
                 for j in range(columnOffset*columnStep, columnOffset*columnStep+columnStep):                                                            
                     result[i][j] = sectorData[i-rowOffset*rowStep][j-columnOffset*columnStep]                                              
     return result
+
+def stage_print(stage:str, description:str) -> None:
+    info = {
+        "Stage": stage,
+        "Description": description
+    }
+    print(json.dumps(info))
+
+def get_bias(path:str, temp:str, binx:str, biny:str, subx:str, suby:str) -> str:
+    bdf_path = join(path, 'bdf')
+
+    bias_path = join(bdf_path, f"Bias_temp{temp}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+    if exists(bias_path):
+        masterbias_path = join(bias_path, 'Masterbias.fits')
+    else:
+        return None
+    if exists(masterbias_path):
+        result = masterbias_path
+    else:
+        return None
+    return result
+
+def get_dark(path: str, exp:str, temp: str, binx: str, biny: str, subx: str, suby: str) -> str:
+    bdf_path = join(path, 'bdf')
+
+    dark_path = join(bdf_path, f"Dark_exp{exp}_temp{temp}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+    if exists(dark_path):
+        masterdark_path = join(dark_path, 'Masterdark.fits')
+    else:
+        return None
+    if exists(masterdark_path):
+        result = masterdark_path
+    else:
+        return None
+    return result
+
+def get_flat(path: str, filt: str, binx: str, biny: str, subx: str, suby: str) -> str:
+    bdf_path = join(path, 'bdf')
+
+    flat_path = join(bdf_path, f"Flat_{filt}_binx{binx}_biny{biny}_subx{subx}_suby{suby}")
+    if exists(flat_path):
+        masterflat_path = join(flat_path, 'Masterflat.fits')
+    else:
+        return None
+    if exists(masterflat_path):
+        result = masterflat_path
+    else:
+        return None
+    return result
+
