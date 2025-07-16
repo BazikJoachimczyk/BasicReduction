@@ -1,4 +1,5 @@
 from os import listdir
+import argparse
 from os.path import join, isdir
 from utils import stage_print, get_bias, get_dark
 from astropy.nddata import CCDData
@@ -116,3 +117,10 @@ def build_all_masters(path:str) -> None:
     create_masterbias_frames(path)
     create_masterdark_frames(path)
     create_masterflat_frames(path)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Sort BDF files in given path.")
+    parser.add_argument("--path", type=str, help="Path to the observation folder")
+    args = parser.parse_args()
+
+    build_all_masters(args.path)

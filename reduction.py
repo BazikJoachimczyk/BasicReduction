@@ -1,4 +1,5 @@
 from os.path import join, exists
+import argparse
 from os import listdir, makedirs
 from utils import stage_print, get_bias, get_dark, get_flat
 from astropy.nddata import CCDData
@@ -75,3 +76,11 @@ def reduction(path: str, flat_path: str = None) -> None:
             science_flat_corr.write(join(science_pipeline_path, science_frame), overwrite=True)
 
             
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Reduce science frames.")
+    parser.add_argument("--path", type=str, help="Path to the observation folder")
+    parser.add_argument("--flat_path", type=str, default=None, help="Optional path to master flat frame")
+    args = parser.parse_args()
+
+    reduction(args.path, args.flat_path)
