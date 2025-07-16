@@ -2,7 +2,7 @@ from os import listdir, rename, makedirs
 from astropy.nddata import CCDData
 from os.path import join, exists
 from utils import stage_print
-
+import argparse
 from os import listdir, rename, makedirs
 from astropy.nddata import CCDData
 from os.path import join, exists
@@ -56,3 +56,10 @@ def sort_bdf(path: str) -> None:
             else:
                 stage_print('-1', 'Unreckognizable imagetype.')
                 raise ValueError(f'Unreckognizable imagetype: {file}.')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Sort BDF files in given path.")
+    parser.add_argument("--path", type=str, help="Path to the observation folder")
+    args = parser.parse_args()
+
+    sort_bdf(args.path)
