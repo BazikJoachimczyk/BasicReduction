@@ -3,6 +3,7 @@ import argparse
 from os import listdir, makedirs
 from utils import stage_print, get_bias, get_dark, get_flat
 from astropy.nddata import CCDData
+import astropy.units as u
 import ccdproc
 
 def reduction(path: str, flat_path: str = None) -> None:
