@@ -80,7 +80,5 @@ if __name__ == "__main__":
 
     metadata_list = collect_metadata(args.path)
     metadata_dicts = [meta.to_dict() for meta in metadata_list]
-
-    print("{")
-    print(json.dumps(metadata_dicts, indent=2))
-    print("}")
+    
+    print(json.dumps(metadata_dicts))    
