@@ -68,7 +68,6 @@ def create_masterflat_frames(path: str) -> None:
             flat_folder = join(path, 'bdf', folder)
             if isdir(flat_folder):
                 flats = [CCDData.read(join(flat_folder, file), unit='adu') for file in listdir(flat_folder) if file.endswith('.fit') or file.endswith('.fits')]
-                exp = str(int(flats[0].header['EXPTIME']))
                 temp = str(int(flats[0].header['SET-TEMP']))
                 filt = str(flats[0].header['FILTER'])
                 binx = str(int(flats[0].header['XBINNING']))
@@ -83,20 +82,27 @@ def create_masterflat_frames(path: str) -> None:
                     stage_print("-1", f"No matching bias for flat with parameters: filter: {filt}, temp: {temp}, binx: {binx}, biny: {biny}, subx: {subx}, suby: {suby}.")
                     raise ValueError
 
-                masterdark_path = get_dark(path=path, exp=exp, temp=temp, binx=binx, biny=biny, subx=subx, suby=suby)
-                if masterdark_path is not None:
-                    masterdark = CCDData.read(masterdark_path, unit='adu')
-                    flats_dark_corrected = [
+                # Flats in one folder can have different exposures (e.g. sky flats),
+                # so each flat gets the master dark matching its own exposure.
+                masterdarks = {}
+                flats_dark_corrected = []
+                for flat in flats_bias_corrected:
+                    exp = str(int(flat.header['EXPTIME']))
+                    if exp not in masterdarks:
+                        masterdark_path = get_dark(path=path, exp=exp, temp=temp, binx=binx, biny=biny, subx=subx, suby=suby)
+                        if masterdark_path is None:
+                            stage_print("-1", f"No matching dark for flat with parameters: filter: {filt}, exp: {exp}, binx: {binx}, biny: {biny}, subx: {subx}, suby: {suby}.")
+                            raise ValueError
+                        masterdarks[exp] = CCDData.read(masterdark_path, unit='adu')
+                    masterdark = masterdarks[exp]
+                    flats_dark_corrected.append(
                         ccdproc.subtract_dark(
                             flat,
                             masterdark,
                             scale=False,
                             data_exposure=float(flat.header['EXPTIME']) * u.second,
-                            dark_exposure=float(masterdark.header['EXPTIME']) * u.second) for flat in flats_bias_corrected
-                                        ]
-                else:
-                    stage_print("-1", f"No matching dark for flat with parameters: filter: {filt}, exp: {exp}, binx: {binx}, biny: {biny}, subx: {subx}, suby: {suby}.")
-                    raise ValueError
+                            dark_exposure=float(masterdark.header['EXPTIME']) * u.second)
+                    )
 
                 flats_normalized = [
                                 CCDData(data=flat.data / np.median(flat.data), unit=flat.unit, meta=flat.header)

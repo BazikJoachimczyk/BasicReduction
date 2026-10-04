@@ -1,4 +1,4 @@
-from os.path import join, exists
+from os.path import join, exists, isdir
 import argparse
 from os import listdir, makedirs
 from utils import stage_print, get_bias, get_dark, get_flat
@@ -8,7 +8,7 @@ import ccdproc
 
 def reduction(path: str, flat_path: str = None) -> None:
     stage_print("1", "Science frames reduction.")
-    folders = listdir(path)
+    folders = [f for f in listdir(path) if isdir(join(path, f))]
 
     if 'bdf' in folders:
         folders.remove('bdf')
